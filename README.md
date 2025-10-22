@@ -1,228 +1,556 @@
 # Marshapp - AI Music Generation Platform
 
-An AI-powered music generation web platform that enables users to upload songs or instrumentals and generate similar beats using artificial intelligence.
+[![GitHub](https://img.shields.io/github/license/shaqdeff/marshapp)](https://github.com/shaqdeff/marshapp)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-11-red.svg)](https://nestjs.com/)
 
-## Features
+An AI-powered music generation web platform that enables users to upload songs or instrumentals and generate similar beats using artificial intelligence. Features real-time audio analysis, tempo detection, and intelligent beat generation with natural language refinement capabilities.
 
-- 🎵 Upload audio files (MP3/WAV) up to 50MB
-- 🤖 AI-powered beat generation using advanced models
-- 🎛️ Natural language refinement of generated beats
-- 📊 Audio analysis with tempo, key, and genre detection
-- 🎨 Waveform visualization and audio playback
-- 👤 User authentication and content management
-- 📱 Responsive design for desktop and mobile
+## 🚀 Features
 
-## Tech Stack
+- 🎵 **Audio Upload**: Support for MP3, WAV, and M4A files up to 50MB
+- 🔍 **Audio Analysis**: Real-time tempo, key, genre, and mood detection using Spotify Web API and Node.js audio processing
+- 🤖 **AI Beat Generation**: Powered by advanced AI models with natural language refinement
+- 🎨 **Waveform Visualization**: Interactive audio playback with WaveSurfer.js
+- 👤 **User Authentication**: Secure JWT-based authentication with NextAuth
+- 📱 **Responsive Design**: Optimized for desktop and mobile devices
+- ⚡ **Real-time Processing**: Asynchronous job processing with Bull queues
+
+## 🛠️ Tech Stack
 
 ### Frontend
 
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type-safe JavaScript
+- **Next.js 15** - React framework with App Router and Turbopack
+- **TypeScript** - Type-safe JavaScript development
 - **TailwindCSS** - Utility-first CSS framework
-- **Zustand** - State management
+- **Zustand** - Lightweight state management
 - **WaveSurfer.js** - Audio waveform visualization
-- **Framer Motion** - Animations
+- **Framer Motion** - Smooth animations and transitions
+- **NextAuth** - Authentication for Next.js
 
 ### Backend
 
-- **NestJS** - Node.js framework
-- **PostgreSQL** - Primary database
-- **Redis** - Job queue and caching
-- **TypeORM** - Database ORM
-- **BullMQ** - Job queue management
-- **JWT** - Authentication
+- **NestJS 11** - Progressive Node.js framework
+- **PostgreSQL 15** - Relational database
+- **Redis 7** - In-memory data store for caching and job queues
+- **TypeORM** - Object-relational mapping
+- **Bull/BullMQ** - Job queue management
+- **JWT** - JSON Web Token authentication
+- **Multer** - File upload handling
 
-### AI Services
+### AI & Audio Processing
 
-- **MusicGen** - Beat generation
-- **OpenAI API** - Natural language processing
-- **Demucs** - Stem separation
+- **Spotify Web API** - Audio features and track information
+- **music-metadata** - Audio file metadata extraction
+- **music-tempo** - BPM detection
+- **@tonaljs/tonal** - Music theory and key detection
+- **FFmpeg** - Audio processing and format conversion
 
-## Quick Start
+## 📋 Prerequisites
 
-### Prerequisites
+Before setting up the project, ensure you have the following installed:
 
-- Node.js 18+ and npm
-- PostgreSQL 15+
-- Redis 7+
+- **Node.js 18+** and **npm** - [Download here](https://nodejs.org/)
+- **PostgreSQL 15+** - [Installation guide](https://www.postgresql.org/download/)
+- **Redis 7+** - [Installation guide](https://redis.io/download/)
+- **Docker & Docker Compose** (optional but recommended) - [Install Docker](https://docs.docker.com/get-docker/)
 
-### Installation
+## 🚀 Quick Start
 
-1. **Clone the repository**
+### 1. Clone the Repository
 
-   ```bash
-   git clone <repository-url>
-   cd marshapp
-   ```
+```bash
+git clone https://github.com/shaqdeff/marshapp.git
+cd marshapp
+```
 
-2. **Install dependencies**
+### 2. Install Dependencies
 
-   ```bash
-   npm run setup
-   ```
+```bash
+# Install root dependencies and setup workspaces
+npm run setup
+```
 
-3. **Set up environment variables**
+### 3. Environment Configuration
 
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+```bash
+# Copy environment template
+cp .env.example .env
+```
 
-4. **Start services with Docker**
+Edit the `.env` file with your configuration:
 
-   ```bash
-   docker-compose up -d postgres redis
-   ```
+```bash
+# Database Configuration
+DATABASE_URL=postgresql://marshapp_user:marshapp_password@localhost:5432/marshapp
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=marshapp_user
+DATABASE_PASSWORD=your_secure_password
+DATABASE_NAME=marshapp
 
-5. **Set up database**
+# Redis Configuration
+REDIS_URL=redis://localhost:6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
-   ```bash
-   # Connect to PostgreSQL and run the schema
-   psql -h localhost -U marshapp_user -d marshapp -f database/schema.sql
-   ```
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=30d
 
-6. **Start development servers**
-   ```bash
-   npm run dev
-   ```
+# NextAuth Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-nextauth-secret-change-this-in-production
 
-The application will be available at:
+# Supabase Configuration (for file storage)
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
+# Spotify API (for audio analysis)
+SPOTIFY_CLIENT_ID=your-spotify-client-id
+SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
 
-## Development
+# AI Service Configuration (optional)
+OPENAI_API_KEY=your-openai-api-key
+HUGGINGFACE_API_KEY=your-huggingface-api-key
+REPLICATE_API_TOKEN=your-replicate-api-token
+```
+
+### 4. Start Services
+
+#### Option A: Using Docker (Recommended)
+
+```bash
+# Start PostgreSQL and Redis
+docker compose up -d postgres redis
+
+# Wait for services to be healthy
+docker compose ps
+```
+
+#### Option B: Local Installation
+
+If you prefer to run PostgreSQL and Redis locally:
+
+```bash
+# Start PostgreSQL (macOS with Homebrew)
+brew services start postgresql
+
+# Start Redis (macOS with Homebrew)
+brew services start redis
+
+# Or use your system's service manager
+```
+
+### 5. Database Setup
+
+The database schema will be automatically initialized when using Docker. For manual setup:
+
+```bash
+# Connect to PostgreSQL and run the schema
+psql -h localhost -U marshapp_user -d marshapp -f database/schema.sql
+psql -h localhost -U marshapp_user -d marshapp -f database/permissions.sql
+```
+
+### 6. Start Development Servers
+
+```bash
+# Start both frontend and backend concurrently
+npm run dev
+```
+
+This will start:
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8800
+
+## 🏗️ Development
 
 ### Project Structure
 
 ```
 marshapp/
-├── frontend/          # Next.js frontend application
-├── backend/           # NestJS backend API
-├── database/          # Database schemas and migrations
-├── .github/           # GitHub Actions workflows
-└── docker-compose.yml # Development services
+├── frontend/              # Next.js frontend application
+│   ├── src/
+│   │   ├── app/          # App Router pages and layouts
+│   │   ├── components/   # Reusable React components
+│   │   ├── hooks/        # Custom React hooks
+│   │   ├── lib/          # Utility functions and API clients
+│   │   └── store/        # Zustand state management
+│   ├── public/           # Static assets
+│   └── package.json
+├── backend/               # NestJS backend API
+│   ├── src/
+│   │   ├── analysis/     # Audio analysis module
+│   │   ├── auth/         # Authentication module
+│   │   ├── entities/     # TypeORM database entities
+│   │   └── main.ts       # Application entry point
+│   └── package.json
+├── database/              # Database schemas and SQL files
+│   ├── schema.sql        # Main database schema
+│   └── permissions.sql   # User permissions setup
+├── docker-compose.yml     # Development services
+└── package.json          # Root workspace configuration
 ```
 
 ### Available Scripts
 
 ```bash
 # Development
-npm run dev              # Start both frontend and backend
-npm run dev:frontend     # Start frontend only
-npm run dev:backend      # Start backend only
+npm run dev              # Start both frontend and backend concurrently
+npm run dev:frontend     # Start frontend only (localhost:3000)
+npm run dev:backend      # Start backend only (localhost:8800)
 
 # Building
-npm run build            # Build both applications
-npm run build:frontend   # Build frontend
-npm run build:backend    # Build backend
+npm run build            # Build both applications for production
+npm run build:frontend   # Build frontend with Turbopack
+npm run build:backend    # Build backend with Nest CLI
 
 # Testing
-npm run test             # Run all tests
-npm run test:frontend    # Run frontend tests
-npm run test:backend     # Run backend tests
+npm run test             # Run all tests across workspaces
+npm run test:frontend    # Run frontend tests with Jest
+npm run test:backend     # Run backend tests with Jest
 
-# Linting
-npm run lint             # Lint all code
+# Linting & Formatting
+npm run lint             # Lint all code with ESLint
+npm run lint:frontend    # Lint frontend code only
+npm run lint:backend     # Lint backend code only
 npm run format           # Format code with Prettier
+
+# Setup & Installation
+npm run setup            # Install all dependencies for workspaces
+npm run setup:frontend   # Install frontend dependencies only
+npm run setup:backend    # Install backend dependencies only
 ```
 
-### Environment Variables
+### Individual Workspace Scripts
 
-Key environment variables (see `.env.example` for complete list):
+**Frontend** (`cd frontend && npm run <script>`):
 
 ```bash
-# Database
-DATABASE_URL=postgresql://marshapp_user:marshapp_password@localhost:5432/marshapp
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Authentication
-JWT_SECRET=your-jwt-secret
-NEXTAUTH_SECRET=your-nextauth-secret
-
-# AI Services
-OPENAI_API_KEY=your-openai-key
-HUGGINGFACE_API_KEY=your-huggingface-key
-REPLICATE_API_TOKEN=your-replicate-token
-
-# File Storage
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-key
+npm run dev          # Start with Turbopack (faster builds)
+npm run build        # Production build
+npm run start        # Start production server
+npm run lint         # ESLint check
+npm run test         # Jest tests
+npm run test:watch   # Jest in watch mode
 ```
 
-## API Documentation
+**Backend** (`cd backend && npm run <script>`):
 
-The backend API provides the following endpoints:
+```bash
+npm run start:dev    # Development with hot reload
+npm run start:debug  # Debug mode with inspector
+npm run start:prod   # Production mode
+npm run build        # Compile TypeScript
+npm run test         # Jest tests
+npm run test:watch   # Jest in watch mode
+npm run test:cov     # Test coverage report
+npm run test:e2e     # End-to-end tests
+```
 
-- `POST /uploads` - Upload audio files
-- `GET /uploads/:id/analysis` - Get audio analysis
-- `POST /generations` - Generate beats
-- `GET /generations/:id/status` - Check generation status
-- `POST /generations/:id/refine` - Refine beats with prompts
-- `GET /audio/:id/stream` - Stream audio
-- `GET /audio/:id/download` - Download audio
+## 🔧 Configuration Guide
 
-## Testing
+### Required API Keys
+
+1. **Spotify API** (for audio analysis):
+   - Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+   - Create a new app and get Client ID and Client Secret
+   - Add to `.env`: `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`
+
+2. **Supabase** (for file storage):
+   - Create account at [Supabase](https://supabase.com)
+   - Create a new project and get URL and keys
+   - Add to `.env`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+
+3. **AI Services** (optional for advanced features):
+   - OpenAI API key from [OpenAI Platform](https://platform.openai.com)
+   - Hugging Face API key from [Hugging Face](https://huggingface.co/settings/tokens)
+   - Replicate API token from [Replicate](https://replicate.com/account/api-tokens)
+
+### Port Configuration
+
+- **Frontend**: `3000` (Next.js default)
+- **Backend**: `8800` (configured in backend/src/main.ts)
+- **PostgreSQL**: `5432`
+- **Redis**: `6379`
+
+### Common Issues & Solutions
+
+#### Port Already in Use
+
+```bash
+# Kill process on port 3000 (frontend)
+npx kill-port 3000
+
+# Kill process on port 8800 (backend)
+npx kill-port 8800
+
+# Or find and kill manually
+lsof -ti:3000 | xargs kill -9
+lsof -ti:8800 | xargs kill -9
+```
+
+#### Database Connection Issues
+
+```bash
+# Check if PostgreSQL is running
+pg_isready -h localhost -p 5432
+
+# Reset database (with Docker)
+docker-compose down postgres
+docker-compose up -d postgres
+
+# Manual database reset
+dropdb marshapp && createdb marshapp
+psql -d marshapp -f database/schema.sql
+```
+
+#### Redis Connection Issues
+
+```bash
+# Test Redis connection
+redis-cli ping
+
+# Restart Redis (with Docker)
+docker-compose restart redis
+```
+
+## 📡 API Documentation
+
+The backend API provides RESTful endpoints for audio processing and analysis:
+
+### Upload Endpoints
+
+- `POST /uploads` - Upload audio files (MP3, WAV, M4A)
+- `GET /uploads/:id` - Get upload details
+- `GET /uploads/:id/analysis` - Get audio analysis results
+
+### Analysis Endpoints
+
+- `POST /analysis/:uploadId` - Trigger audio analysis
+- `GET /analysis/:uploadId` - Get analysis status and results
+- `POST /analysis/:uploadId/retry` - Retry failed analysis
+
+### Audio Processing
+
+- `GET /audio/:id/stream` - Stream audio with range support
+- `GET /audio/:id/download` - Download processed audio
+- `GET /audio/:id/waveform` - Get waveform data for visualization
+
+### Authentication
+
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/profile` - Get user profile (JWT required)
+
+**Base URL**: `http://localhost:8800` (development)
+
+**Authentication**: Include JWT token in Authorization header:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+## 🧪 Testing
 
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests across workspaces
 npm test
 
-# Run with coverage
-npm run test:frontend -- --coverage
-npm run test:backend -- --coverage
+# Frontend tests with coverage
+cd frontend && npm run test
+cd frontend && npm run test -- --coverage
 
-# Run in watch mode
-npm run test:frontend -- --watch
-npm run test:backend -- --watch
+# Backend tests with coverage
+cd backend && npm run test
+cd backend && npm run test:cov
+
+# Watch mode for development
+cd frontend && npm run test:watch
+cd backend && npm run test:watch
+
+# End-to-end tests (backend)
+cd backend && npm run test:e2e
 ```
 
 ### Test Structure
 
-- **Frontend**: React Testing Library + Jest
+- **Frontend**: Jest + React Testing Library + Testing Library User Event
 - **Backend**: Jest + Supertest for API testing
-- **E2E**: Playwright (to be added)
+- **Database**: In-memory SQLite for testing
+- **E2E**: Supertest for full API integration tests
 
-## Deployment
+### Writing Tests
+
+**Frontend Component Test Example**:
+
+```typescript
+import { render, screen } from '@testing-library/react'
+import { LoginForm } from './LoginForm'
+
+test('renders login form', () => {
+  render(<LoginForm />)
+  expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+})
+```
+
+**Backend API Test Example**:
+
+```typescript
+import request from 'supertest';
+import { app } from '../src/main';
+
+describe('/uploads', () => {
+  it('should upload file', async () => {
+    await request(app).post('/uploads').attach('audio', 'test/fixtures/sample.mp3').expect(201);
+  });
+});
+```
+
+## 🚀 Deployment
 
 ### Production Build
 
 ```bash
+# Build both applications
 npm run build
+
+# Test production builds locally
+cd frontend && npm run start  # http://localhost:3000
+cd backend && npm run start:prod  # http://localhost:8800
 ```
 
 ### Docker Deployment
 
 ```bash
+# Build and start all services
 docker-compose up --build
+
+# Production deployment
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-### Environment Setup
+### Environment Setup for Production
 
-1. Set up PostgreSQL and Redis instances
-2. Configure environment variables for production
-3. Set up AI service API keys
-4. Configure file storage (Supabase)
-5. Deploy frontend to Vercel
-6. Deploy backend to Railway/Heroku
+1. **Database**: Set up managed PostgreSQL (AWS RDS, Google Cloud SQL, etc.)
+2. **Redis**: Set up managed Redis (AWS ElastiCache, Redis Cloud, etc.)
+3. **File Storage**: Configure Supabase Storage buckets
+4. **Environment Variables**: Set all production secrets
+5. **Domain & SSL**: Configure domains and SSL certificates
 
-## Contributing
+### Deployment Platforms
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run linting and tests
-6. Submit a pull request
+**Frontend (Vercel)**:
 
-## License
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-This project is licensed under the MIT License.
+# Deploy from frontend directory
+cd frontend && vercel --prod
+```
 
-## Support
+**Backend (Railway/Render/Heroku)**:
 
-For support and questions, please open an issue on GitHub.
+```bash
+# Example for Railway
+railway login
+railway init
+railway up
+```
+
+**Full-Stack (Docker + VPS)**:
+
+```bash
+# On your server
+git clone https://github.com/shaqdeff/marshapp.git
+cd marshapp
+cp .env.example .env
+# Edit .env for production
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+
+   ```bash
+   gh repo fork shaqdeff/marshapp
+   ```
+
+2. **Create a feature branch**
+
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+3. **Make your changes**
+   - Follow the existing code style
+   - Add tests for new functionality
+   - Update documentation as needed
+
+4. **Run tests and linting**
+
+   ```bash
+   npm run lint
+   npm test
+   ```
+
+5. **Commit your changes**
+
+   ```bash
+   git commit -m "feat: add amazing feature"
+   ```
+
+6. **Push and create PR**
+   ```bash
+   git push origin feature/amazing-feature
+   # Create PR on GitHub
+   ```
+
+### Development Guidelines
+
+- Use TypeScript for all new code
+- Follow the existing folder structure
+- Write tests for new features
+- Use conventional commit messages
+- Keep PRs focused and atomic
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support & Troubleshooting
+
+### Common Issues
+
+1. **Module not found errors**: Run `npm run setup` to reinstall dependencies
+2. **Database connection failed**: Check PostgreSQL is running and credentials are correct
+3. **Redis connection failed**: Ensure Redis is running on port 6379
+4. **Port already in use**: Use `npx kill-port <port-number>` to free up ports
+5. **Build failures**: Clear `node_modules` and reinstall: `rm -rf node_modules && npm run setup`
+
+### Getting Help
+
+- 📖 Check the [documentation](https://github.com/shaqdeff/marshapp/wiki) (coming soon)
+- 🐛 Report bugs via [GitHub Issues](https://github.com/shaqdeff/marshapp/issues)
+- 💬 Join discussions in [GitHub Discussions](https://github.com/shaqdeff/marshapp/discussions)
+- 📧 Contact: [your-email@domain.com](mailto:your-email@domain.com)
+
+### Performance Tips
+
+- Use Turbopack for faster frontend builds (`npm run dev` already configured)
+- Enable Redis caching for production
+- Optimize audio file sizes before upload
+- Use CDN for static assets in production
+
+---
+
+Made with ❤️ by [Shaquille Ndunda](https://github.com/shaqdeff)
