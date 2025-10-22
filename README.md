@@ -300,8 +300,8 @@ lsof -ti:8800 | xargs kill -9
 pg_isready -h localhost -p 5432
 
 # Reset database (with Docker)
-docker-compose down postgres
-docker-compose up -d postgres
+docker compose down postgres
+docker compose up -d postgres
 
 # Manual database reset
 dropdb marshapp && createdb marshapp
@@ -315,7 +315,7 @@ psql -d marshapp -f database/schema.sql
 redis-cli ping
 
 # Restart Redis (with Docker)
-docker-compose restart redis
+docker compose restart redis
 ```
 
 ## 📡 API Documentation
@@ -429,10 +429,10 @@ cd backend && npm run start:prod  # http://localhost:8800
 
 ```bash
 # Build and start all services
-docker-compose up --build
+docker compose up --build
 
 # Production deployment
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### Environment Setup for Production
@@ -472,7 +472,7 @@ git clone https://github.com/shaqdeff/marshapp.git
 cd marshapp
 cp .env.example .env
 # Edit .env for production
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ## 🤝 Contributing
@@ -542,7 +542,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📖 Check the [documentation](https://github.com/shaqdeff/marshapp/wiki) (coming soon)
 - 🐛 Report bugs via [GitHub Issues](https://github.com/shaqdeff/marshapp/issues)
 - 💬 Join discussions in [GitHub Discussions](https://github.com/shaqdeff/marshapp/discussions)
-- 📧 Contact: [your-email@domain.com](mailto:your-email@domain.com)
+- 📧 Contact: [shaquillendunda@gmail.com](mailto:your-email@domain.com)
 
 ### Performance Tips
 
