@@ -1,0 +1,174 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import type { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { AudioAnalysis } from '../entities/audio-analysis.entity';
+import { Upload } from '../entities/upload.entity';
+import { StemSeparationService } from './stem-separation.service';
+import * as ffmpeg from 'fluent-ffmpeg';
+import * as MusicTempo from 'music-tempo';
+import fetch from 'node-fetch';
+import { createWriteStream, createReadStream, unlinkSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
+import { AudioAnalyzerService } from './audio-analyzer.service';
+
+export interface AnalysisResult {
+  tempo?: number;
+  key?: string;
+  genre?: string;
+  mood?: string;
+  duration: number;
+  stemsData?: any;
+  metadata?: Record<string, any>;
+}
+
+@Injectable()
+export class AnalysisService {
+  private readonly logger = new Logger(AnalysisService.name);
+
+  constructor(
+    @InjectRepository(AudioAnalysis)
+    private analysisRepository: Repository<AudioAnalysis>,
+    @InjectRepository(Upload)
+    private uploadRepository: Repository<Upload>,
+    private configService: ConfigService,
+    private stemSeparationService: StemSeparationService,
+    private audioAnalyzerService: AudioAnalyzerService,
+  ) {}
+
+  async analyzeAudio(uploadId: string): Promise<AudioAnalysis> {
+    this.logger.log(`Starting analysis for upload: ${uploadId}`);
+
+    const upload = await this.uploadRepository.findOne({
+      where: { id: uploadId },
+    });
+
+    if (!upload) {
+      throw new Error('Upload not found');
+    }
+
+    // Update upload status
+    upload.status = 'analyzing';
+    await this.uploadRepository.save(upload);
+
+    try {
+      // Perform audio analysis with stem separation
+      const analysisResult = await this.performAnalysis(
+        upload.storageUrl,
+        uploadId,
+      );
+
+      // Create analysis record
+      const analysis = this.analysisRepository.create({
+        uploadId,
+        tempo: analysisResult.tempo,
+        key: analysisResult.key,
+        genre: analysisResult.genre,
+        mood: analysisResult.mood,
+        duration: analysisResult.duration,
+        stemsData: analysisResult.stemsData,
+        metadata: analysisResult.metadata,
+      });
+
+      const savedAnalysis = await this.analysisRepository.save(analysis);
+
+      // Update upload status
+      upload.status = 'analyzed';
+      await this.uploadRepository.save(upload);
+
+      this.logger.log(`Analysis completed for upload: ${uploadId}`);
+      return savedAnalysis;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Analysis failed for upload ${uploadId}: ${errorMessage}`,
+      );
+
+      // Update upload status to failed
+      upload.status = 'failed';
+      await this.uploadRepository.save(upload);
+
+      throw error;
+    }
+  }
+
+  private async performAnalysis(
+    audioUrl: string,
+    uploadId?: string,
+  ): Promise<AnalysisResult> {
+    this.logger.log(`Analyzing audio from URL: ${audioUrl}`);
+
+    try {
+      // Perform real audio analysis using AudioAnalyzerService
+      const features = await this.audioAnalyzerService.analyzeFromUrl(
+        audioUrl,
+        uploadId || 'temp',
+      );
+
+      this.logger.log(
+        `Analysis complete - Tempo: ${features.tempo} BPM, Key: ${features.key}, Genre: ${features.genre}`,
+      );
+
+      // Perform stem separation using Hugging Face Demucs
+      let stemsData: any = null;
+      if (uploadId) {
+        try {
+          this.logger.log('Starting stem separation...');
+          const stems = await this.stemSeparationService.separateStems(
+            audioUrl,
+            uploadId,
+          );
+          stemsData = stems;
+          this.logger.log('Stem separation completed successfully');
+        } catch (stemError) {
+          const errorMessage =
+            stemError instanceof Error ? stemError.message : 'Unknown error';
+          this.logger.warn(`Stem separation failed: ${errorMessage}`);
+          // Continue with analysis even if stem separation fails
+        }
+      }
+
+      return {
+        duration: features.duration,
+        tempo: features.tempo,
+        key: features.key,
+        genre: features.genre,
+        mood: features.mood,
+        stemsData,
+        metadata: {
+          analyzedAt: new Date().toISOString(),
+          version: '2.0',
+          stemSeparationEnabled: !!stemsData,
+          energy: features.energy,
+          valence: features.valence,
+          analysisMethod: 'real',
+        },
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error during analysis: ${errorMessage}`);
+      throw new Error(`Audio analysis failed: ${errorMessage}`);
+    }
+  }
+
+  async getAnalysisByUploadId(uploadId: string): Promise<AudioAnalysis | null> {
+    return this.analysisRepository.findOne({
+      where: { uploadId },
+    });
+  }
+
+  async retryAnalysis(uploadId: string): Promise<AudioAnalysis> {
+    this.logger.log(`Retrying analysis for upload: ${uploadId}`);
+
+    // Delete existing failed analysis if any
+    const existingAnalysis = await this.getAnalysisByUploadId(uploadId);
+    if (existingAnalysis) {
+      await this.analysisRepository.remove(existingAnalysis);
+    }
+
+    return this.analyzeAudio(uploadId);
+  }
+}
