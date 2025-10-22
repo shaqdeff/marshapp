@@ -99,3 +99,4 @@ public/uploads/
 # AI model cache
 models/
 *.model
+.kiro
