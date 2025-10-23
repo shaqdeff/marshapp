@@ -9,6 +9,7 @@ import { AudioAnalyzerService } from './audio-analyzer.service';
 import { AudioDecoderService } from './audio-decoder.service';
 import { TempoDetectorService } from './tempo-detector.service';
 import { KeyDetectorService } from './key-detector.service';
+import { FeatureExtractorService } from './feature-extractor.service';
 import { SupabaseService } from '../common/supabase.service';
 import { AudioAnalysis } from '../entities/audio-analysis.entity';
 import { Upload } from '../entities/upload.entity';
@@ -29,6 +30,7 @@ import { Upload } from '../entities/upload.entity';
     AudioDecoderService,
     TempoDetectorService,
     KeyDetectorService,
+    FeatureExtractorService,
     SupabaseService,
   ],
   exports: [AnalysisService],
