@@ -6,6 +6,9 @@ import { AnalysisController } from './analysis.controller';
 import { AnalysisProcessor } from './analysis.processor';
 import { StemSeparationService } from './stem-separation.service';
 import { AudioAnalyzerService } from './audio-analyzer.service';
+import { AudioDecoderService } from './audio-decoder.service';
+import { TempoDetectorService } from './tempo-detector.service';
+import { KeyDetectorService } from './key-detector.service';
 import { SupabaseService } from '../common/supabase.service';
 import { AudioAnalysis } from '../entities/audio-analysis.entity';
 import { Upload } from '../entities/upload.entity';
@@ -23,6 +26,9 @@ import { Upload } from '../entities/upload.entity';
     AnalysisProcessor,
     StemSeparationService,
     AudioAnalyzerService,
+    AudioDecoderService,
+    TempoDetectorService,
+    KeyDetectorService,
     SupabaseService,
   ],
   exports: [AnalysisService],

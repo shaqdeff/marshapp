@@ -152,7 +152,7 @@ export class AuthService {
 
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
     try {
-      const payload = this.jwtService.verify(refreshToken) as JwtPayload;
+      const payload = this.jwtService.verify(refreshToken);
       const user = await this.findById(payload.sub);
 
       if (!user) {

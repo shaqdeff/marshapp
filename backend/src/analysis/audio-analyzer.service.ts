@@ -3,14 +3,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import * as crypto from 'crypto';
-import * as ffmpegLib from 'fluent-ffmpeg';
 import * as MusicTempo from 'music-tempo';
 import fetch from 'node-fetch';
 import { createWriteStream } from 'fs';
 import { SupabaseService } from '../common/supabase.service';
-
-// Import fluent-ffmpeg correctly
-const ffmpeg = require('fluent-ffmpeg');
 
 const writeFile = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);
@@ -34,18 +30,6 @@ export class AudioAnalyzerService {
   constructor(private supabaseService: SupabaseService) {
     this.tempDir = path.join(process.cwd(), 'temp');
     void this.ensureTempDir();
-
-    // Configure ffmpeg paths
-    ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg');
-
-    // Try to find ffprobe, but don't fail if it's not available
-    try {
-      ffmpeg.setFfprobePath('/usr/local/bin/ffprobe');
-    } catch (error) {
-      this.logger.warn(
-        'ffprobe not found, duration extraction will use fallback method',
-      );
-    }
   }
 
   private async ensureTempDir() {
@@ -71,33 +55,8 @@ export class AudioAnalyzerService {
   }
 
   private async extractDuration(audioFilePath: string): Promise<number> {
-    this.logger.log('Extracting duration...');
-
     return new Promise((resolve) => {
-      // Try ffprobe first with timeout
-      const timeoutId = setTimeout(() => {
-        this.logger.warn('FFprobe timeout, using fallback method');
-        this.fallbackDurationEstimation(audioFilePath, resolve);
-      }, 10000); // 10 second timeout
-
-      ffmpeg(audioFilePath).ffprobe((err, metadata) => {
-        clearTimeout(timeoutId);
-
-        if (err) {
-          this.logger.warn(`FFprobe failed: ${err.message}`);
-          this.fallbackDurationEstimation(audioFilePath, resolve);
-        } else {
-          const duration = metadata.format.duration;
-          if (duration && duration > 0 && duration < 3600) {
-            // Reasonable duration check
-            this.logger.log(`FFprobe duration: ${duration.toFixed(1)}s`);
-            resolve(duration);
-          } else {
-            this.logger.warn('Invalid FFprobe duration, using fallback');
-            this.fallbackDurationEstimation(audioFilePath, resolve);
-          }
-        }
-      });
+      this.fallbackDurationEstimation(audioFilePath, resolve);
     });
   }
 

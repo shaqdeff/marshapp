@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { AudioAnalysis } from '../entities/audio-analysis.entity';
 import { Upload } from '../entities/upload.entity';
 import { StemSeparationService } from './stem-separation.service';
-import * as ffmpeg from 'fluent-ffmpeg';
 import * as MusicTempo from 'music-tempo';
 import fetch from 'node-fetch';
 import { createWriteStream, createReadStream, unlinkSync } from 'fs';
