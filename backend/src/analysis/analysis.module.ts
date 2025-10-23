@@ -10,6 +10,7 @@ import { AudioDecoderService } from './audio-decoder.service';
 import { TempoDetectorService } from './tempo-detector.service';
 import { KeyDetectorService } from './key-detector.service';
 import { FeatureExtractorService } from './feature-extractor.service';
+import { GenreClassifierService } from './genre-classifier.service';
 import { SupabaseService } from '../common/supabase.service';
 import { AudioAnalysis } from '../entities/audio-analysis.entity';
 import { Upload } from '../entities/upload.entity';
@@ -31,6 +32,7 @@ import { Upload } from '../entities/upload.entity';
     TempoDetectorService,
     KeyDetectorService,
     FeatureExtractorService,
+    GenreClassifierService,
     SupabaseService,
   ],
   exports: [AnalysisService],
