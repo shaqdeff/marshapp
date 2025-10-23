@@ -17,7 +17,11 @@
     "test:watch": "jest --watch --passWithNoTests",
     "test:cov": "jest --coverage --passWithNoTests",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json --passWithNoTests"
+    "test:e2e": "jest --config ./test/jest-e2e.json --passWithNoTests",
+    "validate:accuracy": "ts-node src/scripts/validate-analysis-accuracy.ts",
+    "validate:performance": "ts-node src/scripts/performance-monitor.ts",
+    "validate:deployment": "ts-node src/scripts/deployment-validation.ts",
+    "deploy:validate": "ts-node src/scripts/deploy-and-validate.ts"
   },
   "dependencies": {
     "@nestjs/bull": "^11.0.4",

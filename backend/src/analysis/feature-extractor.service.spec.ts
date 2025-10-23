@@ -21,7 +21,7 @@ describe('FeatureExtractorService', () => {
   });
 
   describe('extractFeatures', () => {
-    it('should extract features from valid PCM data', async () => {
+    it('should extract features from valid PCM data', () => {
       // Create test PCM data with a simple sine wave
       const sampleRate = 44100;
       const duration = 1.0; // 1 second
@@ -43,7 +43,7 @@ describe('FeatureExtractorService', () => {
         format: AudioFormat.WAV,
       };
 
-      const features = await service.extractFeatures(pcmData);
+      const features = service.extractFeatures(pcmData);
 
       // Validate feature structure
       expect(features).toBeDefined();
@@ -94,7 +94,7 @@ describe('FeatureExtractorService', () => {
       expect(features.rmsMean).toBeGreaterThan(0);
     });
 
-    it('should handle complex audio with multiple frequencies', async () => {
+    it('should handle complex audio with multiple frequencies', () => {
       // Create test PCM data with multiple frequency components
       const sampleRate = 44100;
       const duration = 2.0; // 2 seconds
@@ -119,7 +119,7 @@ describe('FeatureExtractorService', () => {
         format: AudioFormat.WAV,
       };
 
-      const features = await service.extractFeatures(pcmData);
+      const features = service.extractFeatures(pcmData);
 
       expect(features).toBeDefined();
       expect(features.frameCount).toBeGreaterThan(0);
@@ -138,7 +138,7 @@ describe('FeatureExtractorService', () => {
       expect(features.chroma.some((val) => val > 0)).toBe(true);
     });
 
-    it('should extract consistent features from the same audio', async () => {
+    it('should extract consistent features from the same audio', () => {
       // Create test PCM data
       const sampleRate = 44100;
       const duration = 1.0;
@@ -160,8 +160,8 @@ describe('FeatureExtractorService', () => {
       };
 
       // Extract features twice
-      const features1 = await service.extractFeatures(pcmData);
-      const features2 = await service.extractFeatures(pcmData);
+      const features1 = service.extractFeatures(pcmData);
+      const features2 = service.extractFeatures(pcmData);
 
       // Results should be identical
       expect(features1.frameCount).toBe(features2.frameCount);
@@ -192,7 +192,7 @@ describe('FeatureExtractorService', () => {
       }
     });
 
-    it('should handle different sample rates', async () => {
+    it('should handle different sample rates', () => {
       const testSampleRates = [22050, 44100, 48000];
 
       for (const sampleRate of testSampleRates) {
@@ -214,7 +214,7 @@ describe('FeatureExtractorService', () => {
           format: AudioFormat.WAV,
         };
 
-        const features = await service.extractFeatures(pcmData);
+        const features = service.extractFeatures(pcmData);
 
         expect(features.sampleRate).toBe(sampleRate);
         expect(features.frameCount).toBeGreaterThan(0);
@@ -223,7 +223,7 @@ describe('FeatureExtractorService', () => {
       }
     });
 
-    it('should throw error for empty PCM data', async () => {
+    it('should throw error for empty PCM data', () => {
       const pcmData: PCMData = {
         samples: new Float32Array(0),
         sampleRate: 44100,
@@ -232,15 +232,15 @@ describe('FeatureExtractorService', () => {
         format: AudioFormat.WAV,
       };
 
-      await expect(service.extractFeatures(pcmData)).rejects.toThrow(
+      expect(() => service.extractFeatures(pcmData)).toThrow(
         FeatureExtractionError,
       );
-      await expect(service.extractFeatures(pcmData)).rejects.toThrow(
+      expect(() => service.extractFeatures(pcmData)).toThrow(
         'PCM data contains no samples',
       );
     });
 
-    it('should throw error for invalid sample rate', async () => {
+    it('should throw error for invalid sample rate', () => {
       const samples = new Float32Array(44100); // 1 second at 44100Hz
       const pcmData: PCMData = {
         samples,
@@ -250,15 +250,15 @@ describe('FeatureExtractorService', () => {
         format: AudioFormat.WAV,
       };
 
-      await expect(service.extractFeatures(pcmData)).rejects.toThrow(
+      expect(() => service.extractFeatures(pcmData)).toThrow(
         FeatureExtractionError,
       );
-      await expect(service.extractFeatures(pcmData)).rejects.toThrow(
+      expect(() => service.extractFeatures(pcmData)).toThrow(
         'Invalid sample rate',
       );
     });
 
-    it('should throw error for audio that is too short', async () => {
+    it('should throw error for audio that is too short', () => {
       const samples = new Float32Array(1000); // Very short audio
       const pcmData: PCMData = {
         samples,
@@ -268,15 +268,13 @@ describe('FeatureExtractorService', () => {
         format: AudioFormat.WAV,
       };
 
-      await expect(service.extractFeatures(pcmData)).rejects.toThrow(
+      expect(() => service.extractFeatures(pcmData)).toThrow(
         FeatureExtractionError,
       );
-      await expect(service.extractFeatures(pcmData)).rejects.toThrow(
-        'Audio too short',
-      );
+      expect(() => service.extractFeatures(pcmData)).toThrow('Audio too short');
     });
 
-    it('should handle audio with silence (zero samples)', async () => {
+    it('should handle audio with silence (zero samples)', () => {
       const sampleRate = 44100;
       const duration = 1.0;
       const sampleCount = Math.floor(duration * sampleRate);
@@ -290,7 +288,7 @@ describe('FeatureExtractorService', () => {
         format: AudioFormat.WAV,
       };
 
-      const features = await service.extractFeatures(pcmData);
+      const features = service.extractFeatures(pcmData);
 
       expect(features).toBeDefined();
       expect(features.frameCount).toBeGreaterThan(0);
@@ -310,7 +308,7 @@ describe('FeatureExtractorService', () => {
       expect(features.chroma.every((val) => isFinite(val))).toBe(true);
     });
 
-    it('should validate feature ranges and types', async () => {
+    it('should validate feature ranges and types', () => {
       // Create test PCM data
       const sampleRate = 44100;
       const duration = 1.0;
@@ -330,7 +328,7 @@ describe('FeatureExtractorService', () => {
         format: AudioFormat.WAV,
       };
 
-      const features = await service.extractFeatures(pcmData);
+      const features = service.extractFeatures(pcmData);
 
       // Validate types
       expect(typeof features.frameCount).toBe('number');
