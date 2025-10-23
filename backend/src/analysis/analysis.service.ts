@@ -9,6 +9,7 @@ import {
   StemSeparationResult,
 } from './stem-separation.service';
 import { AudioAnalyzerService } from './audio-analyzer.service';
+import { AnalysisError, AnalysisErrorCode } from './analysis-error';
 
 export interface AnalysisResult {
   tempo?: number;
@@ -76,17 +77,33 @@ export class AnalysisService {
       this.logger.log(`Analysis completed for upload: ${uploadId}`);
       return savedAnalysis;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Analysis failed for upload ${uploadId}: ${errorMessage}`,
-      );
+      let analysisError: AnalysisError;
+
+      if (error instanceof AnalysisError) {
+        analysisError = error;
+      } else {
+        analysisError = new AnalysisError(
+          AnalysisErrorCode.UNKNOWN_ERROR,
+          error instanceof Error ? error.message : 'Unknown error',
+          {
+            uploadId,
+            originalError:
+              error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+
+      this.logger.error({
+        event: 'analysis_service_failed',
+        uploadId,
+        error: analysisError.toJSON(),
+      });
 
       // Update upload status to failed
       upload.status = 'failed';
       await this.uploadRepository.save(upload);
 
-      throw error;
+      throw analysisError;
     }
   }
 
@@ -143,10 +160,31 @@ export class AnalysisService {
         },
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Error during analysis: ${errorMessage}`);
-      throw new Error(`Audio analysis failed: ${errorMessage}`);
+      if (error instanceof AnalysisError) {
+        this.logger.error({
+          event: 'perform_analysis_failed',
+          uploadId,
+          error: error.toJSON(),
+        });
+        throw error;
+      }
+
+      const analysisError = new AnalysisError(
+        AnalysisErrorCode.UNKNOWN_ERROR,
+        error instanceof Error ? error.message : 'Unknown error',
+        {
+          uploadId,
+          originalError: error instanceof Error ? error.message : String(error),
+        },
+      );
+
+      this.logger.error({
+        event: 'perform_analysis_failed',
+        uploadId,
+        error: analysisError.toJSON(),
+      });
+
+      throw analysisError;
     }
   }
 
