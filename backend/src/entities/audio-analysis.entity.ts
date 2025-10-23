@@ -19,14 +19,50 @@ export class AudioAnalysis {
   @Column('decimal', { precision: 5, scale: 2, nullable: true })
   tempo: number;
 
+  @Column('decimal', {
+    precision: 3,
+    scale: 2,
+    nullable: true,
+    name: 'tempo_confidence',
+  })
+  tempoConfidence: number;
+
   @Column({ nullable: true })
   key: string;
+
+  @Column('decimal', {
+    precision: 3,
+    scale: 2,
+    nullable: true,
+    name: 'key_confidence',
+  })
+  keyConfidence: number;
 
   @Column({ nullable: true })
   genre: string;
 
+  @Column('decimal', {
+    precision: 3,
+    scale: 2,
+    nullable: true,
+    name: 'genre_confidence',
+  })
+  genreConfidence: number;
+
+  @Column('simple-array', { nullable: true, name: 'secondary_genres' })
+  secondaryGenres: string[];
+
   @Column({ nullable: true })
   mood: string;
+
+  @Column('simple-array', { nullable: true, name: 'mood_tags' })
+  moodTags: string[];
+
+  @Column({ length: 20, nullable: true })
+  energy: string;
+
+  @Column({ length: 20, nullable: true })
+  valence: string;
 
   @Column('decimal', { precision: 10, scale: 3, nullable: true })
   duration: number;

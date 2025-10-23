@@ -13,9 +13,16 @@ import { AnalysisError, AnalysisErrorCode } from './analysis-error';
 
 export interface AnalysisResult {
   tempo?: number;
+  tempoConfidence?: number;
   key?: string;
+  keyConfidence?: number;
   genre?: string;
+  genreConfidence?: number;
+  secondaryGenres?: string[];
   mood?: string;
+  moodTags?: string[];
+  energy?: string;
+  valence?: string;
   duration: number;
   stemsData?: StemSeparationResult | null;
   metadata?: Record<string, unknown>;
@@ -60,9 +67,16 @@ export class AnalysisService {
       const analysis = this.analysisRepository.create({
         uploadId,
         tempo: analysisResult.tempo,
+        tempoConfidence: analysisResult.tempoConfidence,
         key: analysisResult.key,
+        keyConfidence: analysisResult.keyConfidence,
         genre: analysisResult.genre,
+        genreConfidence: analysisResult.genreConfidence,
+        secondaryGenres: analysisResult.secondaryGenres,
         mood: analysisResult.mood,
+        moodTags: analysisResult.moodTags,
+        energy: analysisResult.energy,
+        valence: analysisResult.valence,
         duration: analysisResult.duration,
         stemsData: analysisResult.stemsData,
         metadata: analysisResult.metadata,
@@ -114,8 +128,8 @@ export class AnalysisService {
     this.logger.log(`Analyzing audio from URL: ${audioUrl}`);
 
     try {
-      // Perform real audio analysis using AudioAnalyzerService (legacy format)
-      const features = await this.audioAnalyzerService.analyzeFromUrlLegacy(
+      // Perform real audio analysis using AudioAnalyzerService
+      const features = await this.audioAnalyzerService.analyzeFromUrl(
         audioUrl,
         uploadId || 'temp',
       );
@@ -146,16 +160,21 @@ export class AnalysisService {
       return {
         duration: features.duration,
         tempo: features.tempo,
+        tempoConfidence: features.tempoConfidence,
         key: features.key,
+        keyConfidence: features.keyConfidence,
         genre: features.genre,
+        genreConfidence: features.genreConfidence,
+        secondaryGenres: features.secondaryGenres,
         mood: features.mood,
+        moodTags: features.moodTags,
+        energy: features.energy,
+        valence: features.valence,
         stemsData,
         metadata: {
           analyzedAt: new Date().toISOString(),
           version: '2.0',
           stemSeparationEnabled: !!stemsData,
-          energy: features.energy,
-          valence: features.valence,
           analysisMethod: 'real',
         },
       };
