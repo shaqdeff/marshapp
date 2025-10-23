@@ -1,15 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
+
 import { AudioAnalysis } from '../entities/audio-analysis.entity';
 import { Upload } from '../entities/upload.entity';
-import { StemSeparationService } from './stem-separation.service';
-import * as MusicTempo from 'music-tempo';
-import fetch from 'node-fetch';
-import { createWriteStream, createReadStream, unlinkSync } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
+import {
+  StemSeparationService,
+  StemSeparationResult,
+} from './stem-separation.service';
 import { AudioAnalyzerService } from './audio-analyzer.service';
 
 export interface AnalysisResult {
@@ -18,8 +16,8 @@ export interface AnalysisResult {
   genre?: string;
   mood?: string;
   duration: number;
-  stemsData?: any;
-  metadata?: Record<string, any>;
+  stemsData?: StemSeparationResult | null;
+  metadata?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -31,7 +29,6 @@ export class AnalysisService {
     private analysisRepository: Repository<AudioAnalysis>,
     @InjectRepository(Upload)
     private uploadRepository: Repository<Upload>,
-    private configService: ConfigService,
     private stemSeparationService: StemSeparationService,
     private audioAnalyzerService: AudioAnalyzerService,
   ) {}
@@ -100,8 +97,8 @@ export class AnalysisService {
     this.logger.log(`Analyzing audio from URL: ${audioUrl}`);
 
     try {
-      // Perform real audio analysis using AudioAnalyzerService
-      const features = await this.audioAnalyzerService.analyzeFromUrl(
+      // Perform real audio analysis using AudioAnalyzerService (legacy format)
+      const features = await this.audioAnalyzerService.analyzeFromUrlLegacy(
         audioUrl,
         uploadId || 'temp',
       );
@@ -111,7 +108,7 @@ export class AnalysisService {
       );
 
       // Perform stem separation using Hugging Face Demucs
-      let stemsData: any = null;
+      let stemsData: StemSeparationResult | null = null;
       if (uploadId) {
         try {
           this.logger.log('Starting stem separation...');

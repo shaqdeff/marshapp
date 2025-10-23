@@ -87,8 +87,12 @@ export class StemSeparationService {
               bucketInfo.filePath,
             );
           } catch (supabaseError) {
+            const errorMessage =
+              supabaseError instanceof Error
+                ? supabaseError.message
+                : 'Unknown error';
             this.logger.warn(
-              `Supabase download failed: ${supabaseError.message}, trying signed URL`,
+              `Supabase download failed: ${errorMessage}, trying signed URL`,
             );
 
             // Try with signed URL as fallback
